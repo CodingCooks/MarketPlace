@@ -13,7 +13,7 @@ public class MarketPlaceApplication {
         SpringApplication.run(MarketPlaceApplication.class, args);
     }
 
-    @GetMapping
+    @GetMapping("/home")
     public String homePage() {
         return "Hello this the home page";
     }
