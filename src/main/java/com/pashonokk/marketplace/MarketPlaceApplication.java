@@ -1,6 +1,5 @@
 package com.pashonokk.marketplace;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -14,10 +13,8 @@ public class MarketPlaceApplication {
         SpringApplication.run(MarketPlaceApplication.class, args);
     }
 
-    @GetMapping("/home")
-    public String homePage(@Value("${spring.datasource.url}") String url,
-                           @Value("${spring.datasource.password}") String password,
-                           @Value("${spring.datasource.username}") String username) {
-        return "Url " + url + "\nPass" + password  + "\nUsername" + username;
+    @GetMapping
+    public String homePage() {
+        return "Hello this is the main page of marketplace app";
     }
 }
