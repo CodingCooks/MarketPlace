@@ -3,3 +3,13 @@ spring:
     username: ${DB_HEROKU_USERNAME:postgres}
     password: ${DB_HEROKU_PASSWORD:postgres}
     url: ${DB_HEROKU_URL:jdbc:postgresql://localhost:5432/marketplace}
+  jpa:
+   hibernate:
+     ddl-auto: validate
+   open-in-view: false
+
+
+
+jwt:
+  signing: ${JWT_SIGNING:secret}
+  expiration: 6000000
