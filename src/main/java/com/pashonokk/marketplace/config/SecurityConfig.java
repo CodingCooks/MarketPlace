@@ -31,7 +31,6 @@ import static org.springframework.security.config.http.SessionCreationPolicy.STA
 public class SecurityConfig {
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final UserDetailsService userDetailsService;
-
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         var corsConfigurationSource = corsConfigurationSource();
@@ -39,7 +38,9 @@ public class SecurityConfig {
                 .cors(config -> config.configurationSource(corsConfigurationSource))
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(c -> c
-                        .requestMatchers("/api/v1/users/register", "/api/v1/users/authorize","/")
+                        .requestMatchers("/api/v1/users/register",
+                                "/api/v1/users/authorize",
+                                "/swagger-ui/**","/swagger-ui.html", "/v3/api-docs/**")
                         .permitAll()
                         .anyRequest().authenticated())
                 .sessionManagement(manager -> manager.sessionCreationPolicy(STATELESS))
@@ -62,6 +63,7 @@ public class SecurityConfig {
         source.registerCorsConfiguration("/**", configuration);
         return source;
     }
+
 
     @Bean
     public PasswordEncoder passwordEncoder() {
