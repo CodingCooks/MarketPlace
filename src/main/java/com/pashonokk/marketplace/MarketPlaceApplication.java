@@ -15,7 +15,9 @@ public class MarketPlaceApplication {
     }
 
     @GetMapping("/home")
-    public String homePage(@Value("${spring.datasource.url}") String url) {
-        return url;
+    public String homePage(@Value("${spring.datasource.url}") String url,
+                           @Value("${spring.datasource.password}") String password,
+                           @Value("${spring.datasource.username}") String username) {
+        return "Url " + url + "\nPass" + password  + "\nUsername" + username;
     }
 }
