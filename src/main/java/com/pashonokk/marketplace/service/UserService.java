@@ -1,14 +1,12 @@
 package com.pashonokk.marketplace.service;
 
 
-import com.pashonokk.marketplace.dto.AuthorizationToken;
-import com.pashonokk.marketplace.dto.JwtAuthorizationResponse;
-import com.pashonokk.marketplace.dto.UserAuthorizationDto;
-import com.pashonokk.marketplace.dto.UserSavingDto;
+import com.pashonokk.marketplace.dto.*;
 import com.pashonokk.marketplace.entity.Phone;
 import com.pashonokk.marketplace.entity.Role;
 import com.pashonokk.marketplace.entity.User;
 import com.pashonokk.marketplace.exception.AuthenticationException;
+import com.pashonokk.marketplace.exception.UserDoesntExistException;
 import com.pashonokk.marketplace.exception.UserExistsException;
 import com.pashonokk.marketplace.mapper.UserSavingMapper;
 import com.pashonokk.marketplace.repository.RoleRepository;
@@ -55,17 +53,23 @@ public class UserService {
     }
 
     public JwtAuthorizationResponse authorize(UserAuthorizationDto userDto) {
+        User user = userRepository.findUserByEmail(userDto.getEmail())
+                .orElseThrow(() -> new UserDoesntExistException("User with email " + userDto.getEmail() + " doesn`t exist"));
         try {
             authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(userDto.getEmail(), userDto.getPassword()));
         } catch (BadCredentialsException e) {
-            throw new AuthenticationException("Email or password is wrong, try again");
+            throw new AuthenticationException("Password is wrong, try again");
         }
-        User user = userRepository.findUserByEmail(userDto.getEmail())
-                .orElseThrow(() -> new UsernameNotFoundException("User with email " + userDto.getEmail() + " doesn`t exist"));
         String token = jwtService.generateToken(user);
         OffsetDateTime expiresAt = jwtService.getExpiration(token);
         List<String> permissions = user.getAuthorities().stream().map(GrantedAuthority::getAuthority).toList();
         return new JwtAuthorizationResponse(new AuthorizationToken(token, expiresAt), user.getRole().getName(), permissions);
     }
 
+    public void changePassword(PasswordChangingDto passwordChangingDto) {
+        User user = userRepository.findUserByEmail(passwordChangingDto.getEmail())
+                .orElseThrow(() -> new UsernameNotFoundException("User with email " + passwordChangingDto.getEmail() + " doesn`t exist"));
+
+        user.setPassword(passwordEncoder.encode(passwordChangingDto.getNewPassword()));
+    }
 }

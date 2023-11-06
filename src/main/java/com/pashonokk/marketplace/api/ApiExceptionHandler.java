@@ -24,7 +24,7 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler implemen
     @ExceptionHandler(EntityValidationException.class)
     protected ResponseEntity<Object> handleEntityValidationException(@NotNull EntityValidationException e) {
         ArrayList<String> errorMessages = new ArrayList<>();
-        e.getErrors().getFieldErrors()
+        e.getErrors().getAllErrors()
                 .forEach(error->errorMessages.add(error.getDefaultMessage()));
         return fail(e, () -> new ValidationFailedResponse(e.getMessage(), errorMessages));
     }
