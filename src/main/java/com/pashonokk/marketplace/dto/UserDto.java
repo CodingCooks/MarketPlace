@@ -13,4 +13,5 @@ public class UserDto {
     private String lastName;
     private Boolean isActive;
     private String username;
+    private String phoneNumber;
 }

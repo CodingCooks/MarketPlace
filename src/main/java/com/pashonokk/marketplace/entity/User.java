@@ -6,9 +6,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.Objects;
-import java.util.Set;
 
 @Entity
 @Getter
@@ -28,13 +26,14 @@ public class User implements UserDetails {
     private String lastName;
     private Boolean isActive;
     private String username;
+    @Column(unique = true, nullable = false, updatable = false)
+    private String phoneNumber;
     private Boolean isVerified = false;
     @ManyToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JoinColumn(name = "roleId")
     private Role role;
-    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, mappedBy = "user")
-    @Setter(AccessLevel.PRIVATE)
-    private Set<Phone> phones = new HashSet<>();
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private Token token;
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return role.getPermissions();
