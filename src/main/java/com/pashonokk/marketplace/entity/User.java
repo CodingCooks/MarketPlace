@@ -26,6 +26,8 @@ public class User implements UserDetails {
     private String lastName;
     private Boolean isActive;
     private String username;
+    @Column(unique = true, nullable = false, updatable = false)
+    private String phoneNumber;
     private Boolean isVerified = false;
     @ManyToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JoinColumn(name = "roleId")
