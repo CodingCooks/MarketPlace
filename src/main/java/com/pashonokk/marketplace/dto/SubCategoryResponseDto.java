@@ -7,8 +7,9 @@ import lombok.*;
 @ToString
 @NoArgsConstructor
 @AllArgsConstructor
-public class CategoryRequestDto {
+public class SubCategoryResponseDto {
     private Long id;
     private String name;
     private String description;
+    private CategoryResponseDto category;
 }

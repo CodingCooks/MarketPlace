@@ -1,7 +1,8 @@
 package com.pashonokk.marketplace.controller;
 
-import com.pashonokk.marketplace.dto.CategoryRequestDto;
+import com.pashonokk.marketplace.dto.CategoryResponseDto;
 import com.pashonokk.marketplace.dto.CategorySavingDto;
+import com.pashonokk.marketplace.dto.SubCategoryResponseDto;
 import com.pashonokk.marketplace.endpoint.PageResponse;
 import com.pashonokk.marketplace.exception.BigSizeException;
 import com.pashonokk.marketplace.exception.EntityValidationException;
@@ -18,6 +19,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
+import java.util.List;
 
 
 @RestController
@@ -28,28 +30,33 @@ public class CategoryRestController {
     private final Logger logger = LoggerFactory.getLogger(CategoryRestController.class);
 
     @GetMapping
-    public ResponseEntity<PageResponse<CategoryRequestDto>> getCategories(@RequestParam(required = false, defaultValue = "0") int page,
-                                                                          @RequestParam(required = false, defaultValue = "10") int size,
-                                                                          @RequestParam(required = false, defaultValue = "id") String sort) {
+    public ResponseEntity<PageResponse<CategoryResponseDto>> getCategories(@RequestParam(required = false, defaultValue = "0") int page,
+                                                                           @RequestParam(required = false, defaultValue = "10") int size,
+                                                                           @RequestParam(required = false, defaultValue = "id") String sort) {
         if (size > 100) {
             throw new BigSizeException("You can get maximum 100 categories at one time");
         }
-        PageResponse<CategoryRequestDto> allCategories = categoryService.getAllCategories(PageRequest.of(page, size, Sort.by(sort)));
+        PageResponse<CategoryResponseDto> allCategories = categoryService.getAllCategories(PageRequest.of(page, size, Sort.by(sort)));
         return ResponseEntity.ok(allCategories);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<CategoryRequestDto> getCategory(@PathVariable Long id) {
+    public ResponseEntity<CategoryResponseDto> getCategory(@PathVariable Long id) {
         return ResponseEntity.ok(categoryService.getCategory(id));
     }
 
+    @GetMapping("/{id}/sub-categories")
+    public ResponseEntity<List<SubCategoryResponseDto>> getCategorySubCategories(@PathVariable Long id) {
+        return ResponseEntity.ok(categoryService.getCategorySubCategories(id));
+    }
+
     @PostMapping
-    public ResponseEntity<CategoryRequestDto> addCategory(@RequestBody @Valid CategorySavingDto categorySavingDto, Errors errors) {
+    public ResponseEntity<CategoryResponseDto> addCategory(@RequestBody @Valid CategorySavingDto categorySavingDto, Errors errors) {
         if (errors.hasErrors()) {
             errors.getFieldErrors().forEach(er -> logger.error(er.getDefaultMessage()));
             throw new EntityValidationException("Validation failed", errors);
         }
-        CategoryRequestDto savedCategory = categoryService.addCategory(categorySavingDto);
+        CategoryResponseDto savedCategory = categoryService.addCategory(categorySavingDto);
         URI location = ServletUriComponentsBuilder
                 .fromCurrentRequest()
                 .path("/{id}")
@@ -58,6 +65,4 @@ public class CategoryRestController {
         return ResponseEntity.created(location).body(savedCategory);
     }
 
-    //todo add new subcategory
-    //todo get all subcategories by category
 }
