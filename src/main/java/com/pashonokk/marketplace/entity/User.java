@@ -29,6 +29,7 @@ public class User implements UserDetails {
     @Column(unique = true, nullable = false, updatable = false)
     private String phoneNumber;
     private Boolean isVerified = false;
+    private byte[] photo;
     @ManyToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JoinColumn(name = "roleId")
     private Role role;
