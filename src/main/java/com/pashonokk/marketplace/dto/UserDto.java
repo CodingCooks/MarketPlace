@@ -14,4 +14,5 @@ public class UserDto {
     private Boolean isActive;
     private String username;
     private String phoneNumber;
+    private byte[] photo;
 }
