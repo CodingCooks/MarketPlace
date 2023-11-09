@@ -94,9 +94,9 @@ public class UserService {
     }
 
     @Transactional
-    public void changePassword(PasswordChangingDto passwordChangingDto) {
-        User user = userRepository.findUserByEmail(passwordChangingDto.getEmail())
-                .orElseThrow(() -> new UsernameNotFoundException("User with email " + passwordChangingDto.getEmail() + " doesn`t exist"));
+    public void changePassword(PasswordChangingDto passwordChangingDto, String email) {
+        User user = userRepository.findUserByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException("User with email " + email + " doesn`t exist"));
 
         user.setPassword(passwordEncoder.encode(passwordChangingDto.getNewPassword()));
     }

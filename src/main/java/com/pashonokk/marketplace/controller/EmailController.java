@@ -2,6 +2,7 @@ package com.pashonokk.marketplace.controller;
 
 import com.pashonokk.marketplace.service.UserService;
 import com.pashonokk.marketplace.service.impl.EmailService;
+import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
@@ -22,8 +23,9 @@ public class EmailController {
 
     @GetMapping("/confirm/change-password")
     @ResponseBody
-    public String sendLinkToChangePassword(@RequestBody String email) {
+    public String sendLinkToChangePassword(@RequestBody String email, HttpSession session) {
         userService.sendLinkToChangePassword(email);
+        session.setAttribute("email", email);
         return "We have sent you an email with link to change password";
     }
 
