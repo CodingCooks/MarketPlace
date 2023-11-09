@@ -1,24 +1,30 @@
 package com.pashonokk.marketplace.controller;
 
+import com.pashonokk.marketplace.service.UserService;
 import com.pashonokk.marketplace.service.impl.EmailService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
 
 @Controller
 @RequiredArgsConstructor
-@RequestMapping("/api/v1")
+@RequestMapping("/api/v1/email")
 public class EmailController {
     private final EmailService emailService;
+    private final UserService userService;
 
-    @GetMapping("/confirmEmail/{token}")
+    @GetMapping("/confirm-email/{token}")
     @ResponseBody
     public String confirmUser(@PathVariable String token) {
         emailService.confirmUserEmail(token);
-        return "you are being redirected";
+        return "you are being redirected to login page";
+    }
+
+    @GetMapping("/confirm/change-password")
+    @ResponseBody
+    public String sendLinkToChangePassword(@RequestBody String email) {
+        userService.sendLinkToChangePassword(email);
+        return "We have sent you an email with link to change password";
     }
 
 }

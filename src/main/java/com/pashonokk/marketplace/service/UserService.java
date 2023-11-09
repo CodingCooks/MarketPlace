@@ -13,6 +13,7 @@ import com.pashonokk.marketplace.exception.UserIsNotVerifiedException;
 import com.pashonokk.marketplace.mapper.UserSavingMapper;
 import com.pashonokk.marketplace.repository.RoleRepository;
 import com.pashonokk.marketplace.repository.UserRepository;
+import com.pashonokk.marketplace.util.EmailProperties;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
@@ -42,8 +43,8 @@ public class UserService {
     private final ApplicationEventPublisher applicationEventPublisher;
     @Value("${spring.mail.username}")
     private String emailFrom;
-    @Value("${mail.link.to.confirm.email}")
-    private String linkToConfirmEmail;
+    private final EmailProperties emailProperties;
+
 
     private static final String USER_EXISTS_ERROR_MESSAGE = "User with email %s already exists";
 
@@ -59,16 +60,18 @@ public class UserService {
         Token token = new Token();
         token.addUser(user);
         userRepository.save(user);
-        SimpleMailMessage mailMessage = createMailMessage(user.getEmail(), token.getValue());
+        SimpleMailMessage mailMessage = createMailMessage(user.getEmail(),
+                emailProperties.getConfirmEmail() + token.getValue(),
+                "Follow this link to confirm your email");
         applicationEventPublisher.publishEvent(new UserRegistrationCompletedEvent(mailMessage));
     }
 
-    private SimpleMailMessage createMailMessage(String userEmail, String tokenValue) {
+    private SimpleMailMessage createMailMessage(String userEmail, String text, String subject) {
         SimpleMailMessage message = new SimpleMailMessage();
         message.setFrom(emailFrom);
         message.setTo(userEmail);
-        message.setSubject("Follow this link to confirm your email");
-        message.setText(linkToConfirmEmail + tokenValue);
+        message.setSubject(subject);
+        message.setText(text);
         return message;
     }
 
@@ -97,4 +100,15 @@ public class UserService {
 
         user.setPassword(passwordEncoder.encode(passwordChangingDto.getNewPassword()));
     }
+
+    public void sendLinkToChangePassword(String email) {
+        if (!userRepository.existsByEmail(email)) {
+            throw new UsernameNotFoundException("User with email " + email + " doesn`t exist");
+        }
+        SimpleMailMessage mailMessage = createMailMessage(email,
+                emailProperties.getChangePassword(),
+                "Follow this link to change your password");
+        applicationEventPublisher.publishEvent(new UserRegistrationCompletedEvent(mailMessage));
+    }
+
 }
