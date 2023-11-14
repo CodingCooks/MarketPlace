@@ -15,6 +15,8 @@ import com.pashonokk.marketplace.repository.RoleRepository;
 import com.pashonokk.marketplace.repository.UserRepository;
 import com.pashonokk.marketplace.util.EmailProperties;
 import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
+import org.jasypt.encryption.StringEncryptor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.mail.SimpleMailMessage;
@@ -27,7 +29,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.nio.charset.StandardCharsets;
 import java.time.OffsetDateTime;
+import java.util.Base64;
 import java.util.List;
 
 
@@ -41,12 +45,12 @@ public class UserService {
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
     private final ApplicationEventPublisher applicationEventPublisher;
+    private final EmailProperties emailProperties;
+    private final StringEncryptor stringEncryptor;
     @Value("${spring.mail.username}")
     private String emailFrom;
-    private final EmailProperties emailProperties;
-
-
     private static final String USER_EXISTS_ERROR_MESSAGE = "User with email %s already exists";
+
 
     @Transactional
     public void saveRegisteredUser(UserSavingDto userDto) {
@@ -93,22 +97,26 @@ public class UserService {
         return new JwtAuthorizationResponse(new AuthorizationToken(token, expiresAt), user.getRole().getName(), permissions);
     }
 
+    @SneakyThrows
     @Transactional
-    public void changePassword(PasswordChangingDto passwordChangingDto, String email) {
+    public void changePassword(PasswordChangingDto passwordChangingDto, String encryptedEmail) {
+        byte[] decodedBytes = Base64.getDecoder().decode(encryptedEmail);
+        String email = stringEncryptor.decrypt(new String(decodedBytes, StandardCharsets.UTF_8));
         User user = userRepository.findUserByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("User with email " + email + " doesn`t exist"));
 
         user.setPassword(passwordEncoder.encode(passwordChangingDto.getNewPassword()));
     }
 
+    @SneakyThrows
     public void sendLinkToChangePassword(String email) {
         if (!userRepository.existsByEmail(email)) {
             throw new UsernameNotFoundException("User with email " + email + " doesn`t exist");
         }
+        String encodedEmailForUrl = Base64.getEncoder().encodeToString(stringEncryptor.encrypt(email).getBytes(StandardCharsets.UTF_8));
         SimpleMailMessage mailMessage = createMailMessage(email,
-                emailProperties.getChangePassword(),
+                emailProperties.getChangePassword() + encodedEmailForUrl,
                 "Follow this link to change your password");
         applicationEventPublisher.publishEvent(new UserRegistrationCompletedEvent(mailMessage));
     }
-
 }

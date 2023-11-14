@@ -42,13 +42,15 @@ public class UserController {
         return ResponseEntity.ok(userService.authorize(userDto));
     }
 
-    @PostMapping("/change-password")
-    public ResponseEntity<Void> changePassword(@SessionAttribute("email") String email, @RequestBody @Valid PasswordChangingDto passwordChangingDto, Errors errors) {
+    @PostMapping("/change-password/{encryptedEmail}")
+    public ResponseEntity<Void> changePassword(@PathVariable("encryptedEmail") String encryptedEmail,
+                                               @RequestBody @Valid PasswordChangingDto passwordChangingDto,
+                                               Errors errors) {
         if (errors.hasErrors()) {
             errors.getAllErrors().forEach(er -> logger.error(er.getDefaultMessage()));
             throw new EntityValidationException(VALIDATION_EXCEPTION_MESSAGE, errors);
         }
-        userService.changePassword(passwordChangingDto, email);
+        userService.changePassword(passwordChangingDto, encryptedEmail);
         return ResponseEntity.ok().build();
     }
 }
