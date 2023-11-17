@@ -24,7 +24,7 @@ public class User implements UserDetails {
     private String email;
     private String firstName;
     private String lastName;
-    private Boolean isActive;
+    private Boolean isDeleted = false;
     private String username;
     @Column(unique = true, nullable = false, updatable = false)
     private String phoneNumber;
