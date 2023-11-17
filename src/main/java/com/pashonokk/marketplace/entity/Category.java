@@ -25,6 +25,10 @@ public class Category {
     @Setter(AccessLevel.PRIVATE)
     private Set<SubCategory> subCategories = new HashSet<>();
 
+    @OneToMany(mappedBy = "category")
+    @Setter(AccessLevel.PRIVATE)
+    private Set<Advertisement> advertisements = new HashSet<>();
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
