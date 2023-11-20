@@ -8,6 +8,8 @@ import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.validation.Errors;
 import org.springframework.web.bind.annotation.*;
 
@@ -63,5 +65,12 @@ public class UserController {
     public ResponseEntity<Void> deleteUserAccount(@PathVariable("userId") Long userId) {
         userService.deleteUserAccount(userId);
         return ResponseEntity.noContent().build();
+    }
+
+    @PatchMapping("/add-liked-advertisement/{advertisementId}")
+    public ResponseEntity<Void> addLikedAdvertisement(@PathVariable Long advertisementId,
+                                                      @AuthenticationPrincipal UserDetails userDetails) {
+        userService.addLikedAdvertisement(advertisementId, userDetails.getUsername());
+        return ResponseEntity.ok().build();
     }
 }

@@ -14,6 +14,7 @@ import com.pashonokk.marketplace.repository.AdvertisementRepository;
 import com.pashonokk.marketplace.repository.RoleRepository;
 import com.pashonokk.marketplace.repository.UserRepository;
 import com.pashonokk.marketplace.util.EmailProperties;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import org.jasypt.encryption.StringEncryptor;
@@ -52,6 +53,8 @@ public class UserService {
     @Value("${spring.mail.username}")
     private String emailFrom;
     private static final String USER_EXISTS_ERROR_MESSAGE = "User with email %s already exists";
+    private static final String ADVERTISEMENT_ERROR_MESSAGE = "Advertisement with id %s doesn't exist";
+
 
 
     @Transactional
@@ -141,5 +144,16 @@ public class UserService {
     public List<AdvertisementDto> getActiveUserAdvertisements(Long userId) {
         List<Advertisement> allActiveAdvertisementsById = advertisementRepository.findAllActiveAdvertisementsById(userId);
         return allActiveAdvertisementsById.stream().map(advertisementMapper::toDto).toList();
+    }
+
+    @Transactional
+    public void addLikedAdvertisement(Long advertisementId, String userEmail) {
+        User user = userRepository.findUserByEmail(userEmail)
+                .orElseThrow(() -> new EntityNotFoundException("User with email " + userEmail + " doesn`t exist"));
+        Advertisement advertisement = advertisementRepository
+                .findById(advertisementId)
+                .orElseThrow(() -> new EntityNotFoundException(
+                        String.format(ADVERTISEMENT_ERROR_MESSAGE, advertisementId)));
+        user.getSavedAdvertisements().add(advertisement);
     }
 }
