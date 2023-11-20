@@ -20,5 +20,5 @@ public class Image {
     @JoinColumn(name = "advertisement_id")
     private Advertisement advertisement;
 
-    private boolean isMain = false;
+    private boolean main;
 }

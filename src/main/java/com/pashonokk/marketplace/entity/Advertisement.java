@@ -36,6 +36,12 @@ public class Advertisement {
 
     private boolean isActive = true;
 
+    public void linkImages() {
+        for (Image image : images) {
+            image.setAdvertisement(this);
+        }
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
