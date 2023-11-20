@@ -1,9 +1,6 @@
 package com.pashonokk.marketplace.controller;
 
-import com.pashonokk.marketplace.dto.JwtAuthorizationResponse;
-import com.pashonokk.marketplace.dto.PasswordChangingDto;
-import com.pashonokk.marketplace.dto.UserAuthorizationDto;
-import com.pashonokk.marketplace.dto.UserSavingDto;
+import com.pashonokk.marketplace.dto.*;
 import com.pashonokk.marketplace.exception.EntityValidationException;
 import com.pashonokk.marketplace.service.UserService;
 import jakarta.validation.Valid;
@@ -14,6 +11,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.Errors;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 
 @RestController
 @RequiredArgsConstructor
@@ -22,6 +21,12 @@ public class UserController {
     private final UserService userService;
     private final Logger logger = LoggerFactory.getLogger(UserController.class);
     private static final String VALIDATION_EXCEPTION_MESSAGE = "Validation failed";
+
+    @GetMapping("{userId}/active/advertisements")
+    public ResponseEntity<List<AdvertisementDto>> getActiveUserAdvertisements(@PathVariable Long userId) {
+        List<AdvertisementDto> allActiveAdvertisements = userService.getActiveUserAdvertisements(userId);
+        return ResponseEntity.ok(allActiveAdvertisements);
+    }
 
     @PostMapping("/register")
     public ResponseEntity<Void> registerUser(@RequestBody @Valid UserSavingDto userDto, Errors errors) {

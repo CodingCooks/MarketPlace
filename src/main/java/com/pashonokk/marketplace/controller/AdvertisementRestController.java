@@ -14,6 +14,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.validation.Errors;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
@@ -45,12 +47,14 @@ public class AdvertisementRestController {
     }
 
     @PostMapping
-    public ResponseEntity<AdvertisementDto> addAdvertisement(@RequestBody @Valid AdvertisementSavingDto advertisementSavingDto, Errors errors) {
+    public ResponseEntity<AdvertisementDto> addAdvertisement(@RequestBody @Valid AdvertisementSavingDto advertisementSavingDto,
+                                                             Errors errors,
+                                                             @AuthenticationPrincipal UserDetails userDetails) {
         if (errors.hasErrors()) {
             errors.getFieldErrors().forEach(er -> logger.error(er.getDefaultMessage()));
             throw new EntityValidationException("Validation failed", errors);
         }
-        AdvertisementDto savedAdvertisement = advertisementService.addAdvertisement(advertisementSavingDto);
+        AdvertisementDto savedAdvertisement = advertisementService.addAdvertisement(advertisementSavingDto, userDetails.getUsername());
         URI location = ServletUriComponentsBuilder
                 .fromCurrentRequest()
                 .path("/{id}")

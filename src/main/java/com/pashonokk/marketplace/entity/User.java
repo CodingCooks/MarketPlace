@@ -6,7 +6,9 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Objects;
+import java.util.Set;
 
 @Entity
 @Getter
@@ -35,6 +37,10 @@ public class User implements UserDetails {
     private Role role;
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private Token token;
+
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "user", orphanRemoval = true)
+    @Setter(AccessLevel.PRIVATE)
+    private Set<Advertisement> advertisements = new HashSet<>();
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return role.getPermissions();

@@ -7,8 +7,10 @@ CREATE TABLE IF NOT EXISTS advertisement
     is_active       bool,
     creation_date   date,
     category_id     BIGINT       NOT NULL,
+    user_id BIGINT NOT NULL,
     sub_category_id BIGINT,
     FOREIGN KEY (category_id) references category (id),
+    FOREIGN KEY (user_id) references users (id),
     FOREIGN KEY (sub_category_id) references sub_category (id)
 );
 

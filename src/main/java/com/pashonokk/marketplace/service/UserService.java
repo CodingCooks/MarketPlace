@@ -2,12 +2,15 @@ package com.pashonokk.marketplace.service;
 
 
 import com.pashonokk.marketplace.dto.*;
+import com.pashonokk.marketplace.entity.Advertisement;
 import com.pashonokk.marketplace.entity.Role;
 import com.pashonokk.marketplace.entity.Token;
 import com.pashonokk.marketplace.entity.User;
 import com.pashonokk.marketplace.event.UserRegistrationCompletedEvent;
 import com.pashonokk.marketplace.exception.*;
+import com.pashonokk.marketplace.mapper.AdvertisementMapper;
 import com.pashonokk.marketplace.mapper.UserSavingMapper;
+import com.pashonokk.marketplace.repository.AdvertisementRepository;
 import com.pashonokk.marketplace.repository.RoleRepository;
 import com.pashonokk.marketplace.repository.UserRepository;
 import com.pashonokk.marketplace.util.EmailProperties;
@@ -36,8 +39,10 @@ import java.util.List;
 @RequiredArgsConstructor
 public class UserService {
     private final UserRepository userRepository;
+    private final AdvertisementRepository advertisementRepository;
     private final RoleRepository roleRepository;
     private final UserSavingMapper userSavingMapper;
+    private final AdvertisementMapper advertisementMapper;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
@@ -131,5 +136,11 @@ public class UserService {
             throw new UsernameNotFoundException("User with id " + userId + " doesn`t exist");
         }
         userRepository.setUserAsDeleted(userId);
+    }
+
+    @Transactional(readOnly = true)
+    public List<AdvertisementDto> getActiveUserAdvertisements(Long userId) {
+        List<Advertisement> allActiveAdvertisementsById = advertisementRepository.findAllActiveAdvertisementsById(userId);
+        return allActiveAdvertisementsById.stream().map(advertisementMapper::toDto).toList();
     }
 }
