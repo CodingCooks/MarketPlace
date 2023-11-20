@@ -53,4 +53,10 @@ public class UserController {
         userService.changePassword(passwordChangingDto, encryptedEmail);
         return ResponseEntity.ok().build();
     }
+
+    @DeleteMapping("/{userId}")
+    public ResponseEntity<Void> deleteUserAccount(@PathVariable("userId") Long userId) {
+        userService.deleteUserAccount(userId);
+        return ResponseEntity.noContent().build();
+    }
 }

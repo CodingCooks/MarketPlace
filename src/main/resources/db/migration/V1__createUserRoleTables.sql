@@ -15,7 +15,7 @@ CREATE TABLE IF NOT EXISTS users
     phone_number VARCHAR(50)  NOT NULL UNIQUE,
     role_id      BIGINT,
     is_verified  BOOLEAN,
-    is_active    BOOLEAN,
+    is_deleted BOOLEAN,
     photo        BYTEA,
     FOREIGN KEY (role_id) references role (id)
 );

@@ -6,10 +6,7 @@ import com.pashonokk.marketplace.entity.Role;
 import com.pashonokk.marketplace.entity.Token;
 import com.pashonokk.marketplace.entity.User;
 import com.pashonokk.marketplace.event.UserRegistrationCompletedEvent;
-import com.pashonokk.marketplace.exception.AuthenticationException;
-import com.pashonokk.marketplace.exception.UserDoesntExistException;
-import com.pashonokk.marketplace.exception.UserExistsException;
-import com.pashonokk.marketplace.exception.UserIsNotVerifiedException;
+import com.pashonokk.marketplace.exception.*;
 import com.pashonokk.marketplace.mapper.UserSavingMapper;
 import com.pashonokk.marketplace.repository.RoleRepository;
 import com.pashonokk.marketplace.repository.UserRepository;
@@ -58,6 +55,7 @@ public class UserService {
             throw new UserExistsException(String.format(USER_EXISTS_ERROR_MESSAGE, userDto.getEmail()));
         }
         User user = userSavingMapper.toEntity(userDto);
+//        user.setIsDeleted(false);
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         Role roleUser = roleRepository.findRoleByName("ROLE_USER");
         user.setRole(roleUser);
@@ -83,9 +81,7 @@ public class UserService {
     public JwtAuthorizationResponse authorize(UserAuthorizationDto userDto) {
         User user = userRepository.findUserByEmail(userDto.getEmail())
                 .orElseThrow(() -> new UserDoesntExistException("User with email " + userDto.getEmail() + " doesn`t exist"));
-        if (!user.isEnabled()) {
-            throw new UserIsNotVerifiedException("User email " + userDto.getEmail() + " is not verified");
-        }
+        userChecks(userDto, user);
         try {
             authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(userDto.getEmail(), userDto.getPassword()));
         } catch (BadCredentialsException e) {
@@ -95,6 +91,15 @@ public class UserService {
         OffsetDateTime expiresAt = jwtService.getExpiration(token);
         List<String> permissions = user.getAuthorities().stream().map(GrantedAuthority::getAuthority).toList();
         return new JwtAuthorizationResponse(new AuthorizationToken(token, expiresAt), user.getRole().getName(), permissions);
+    }
+
+    private static void userChecks(UserAuthorizationDto userDto, User user) {
+        if (!user.isEnabled()) {
+            throw new UserIsNotVerifiedException("User email " + userDto.getEmail() + " is not verified");
+        }
+        if (user.getIsDeleted()) {
+            throw new UserDeletedException("User email " + userDto.getEmail() + " was deleted");
+        }
     }
 
     @SneakyThrows
@@ -118,5 +123,13 @@ public class UserService {
                 emailProperties.getChangePassword() + encodedEmailForUrl,
                 "Follow this link to change your password");
         applicationEventPublisher.publishEvent(new UserRegistrationCompletedEvent(mailMessage));
+    }
+
+    @Transactional
+    public void deleteUserAccount(Long userId) {
+        if (!userRepository.existsById(userId)) {
+            throw new UsernameNotFoundException("User with id " + userId + " doesn`t exist");
+        }
+        userRepository.setUserAsDeleted(userId);
     }
 }
