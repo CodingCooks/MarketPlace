@@ -41,6 +41,13 @@ public class User implements UserDetails {
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "user", orphanRemoval = true)
     @Setter(AccessLevel.PRIVATE)
     private Set<Advertisement> advertisements = new HashSet<>();
+
+    @ManyToMany(cascade = {CascadeType.MERGE, CascadeType.PERSIST})
+    @JoinTable(name = "users_saved_advertisements",
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "advertisement_id"))
+    @Setter(AccessLevel.PRIVATE)
+    private Set<Advertisement> savedAdvertisements = new HashSet<>();
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return role.getPermissions();

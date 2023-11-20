@@ -34,6 +34,11 @@ public class Advertisement {
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "advertisement", orphanRemoval = true)
     @Setter(AccessLevel.PRIVATE)
     private Set<Image> images = new HashSet<>();
+
+    @ManyToMany(cascade = {CascadeType.MERGE, CascadeType.PERSIST}, mappedBy = "savedAdvertisements")
+    @Setter(AccessLevel.PRIVATE)
+    private Set<User> users = new HashSet<>();
+
     @Column(unique = true, nullable = false, updatable = false)
     private String location;
     private LocalDate creationDate;

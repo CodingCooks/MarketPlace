@@ -60,7 +60,6 @@ public class UserService {
             throw new UserExistsException(String.format(USER_EXISTS_ERROR_MESSAGE, userDto.getEmail()));
         }
         User user = userSavingMapper.toEntity(userDto);
-//        user.setIsDeleted(false);
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         Role roleUser = roleRepository.findRoleByName("ROLE_USER");
         user.setRole(roleUser);
