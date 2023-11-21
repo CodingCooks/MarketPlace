@@ -156,4 +156,11 @@ public class UserService {
                         String.format(ADVERTISEMENT_ERROR_MESSAGE, advertisementId)));
         user.getSavedAdvertisements().add(advertisement);
     }
+
+    @Transactional(readOnly = true)
+    public List<AdvertisementDto> getLikedUserAdvertisements(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new EntityNotFoundException("User with id " + userId + " doesn`t exist"));
+        return user.getSavedAdvertisements().stream().map(advertisementMapper::toDto).toList();
+    }
 }

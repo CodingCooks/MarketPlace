@@ -30,6 +30,12 @@ public class UserController {
         return ResponseEntity.ok(allActiveAdvertisements);
     }
 
+    @GetMapping("{userId}/liked/advertisements")
+    public ResponseEntity<List<AdvertisementDto>> getLikedUserAdvertisements(@PathVariable Long userId) {
+        List<AdvertisementDto> allActiveAdvertisements = userService.getLikedUserAdvertisements(userId);
+        return ResponseEntity.ok(allActiveAdvertisements);
+    }
+
     @PostMapping("/register")
     public ResponseEntity<Void> registerUser(@RequestBody @Valid UserSavingDto userDto, Errors errors) {
         if (errors.hasErrors()) {
