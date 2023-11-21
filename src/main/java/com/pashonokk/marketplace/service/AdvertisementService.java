@@ -7,12 +7,14 @@ import com.pashonokk.marketplace.endpoint.PageResponse;
 import com.pashonokk.marketplace.entity.Advertisement;
 import com.pashonokk.marketplace.entity.Category;
 import com.pashonokk.marketplace.entity.SubCategory;
+import com.pashonokk.marketplace.entity.User;
 import com.pashonokk.marketplace.mapper.AdvertisementMapper;
 import com.pashonokk.marketplace.mapper.AdvertisementSavingMapper;
 import com.pashonokk.marketplace.mapper.PageMapper;
 import com.pashonokk.marketplace.repository.AdvertisementRepository;
 import com.pashonokk.marketplace.repository.CategoryRepository;
 import com.pashonokk.marketplace.repository.SubCategoryRepository;
+import com.pashonokk.marketplace.repository.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
@@ -31,9 +33,11 @@ public class AdvertisementService {
     private final AdvertisementMapper advertisementMapper;
     private final AdvertisementSavingMapper advertisementSavingMapper;
     private final CategoryRepository categoryRepository;
+    private final UserRepository userRepository;
     private final SubCategoryRepository subCategoryRepository;
     private static final String ADVERTISEMENT_ERROR_MESSAGE = "Advertisement with id %s doesn't exist";
     private static final String CATEGORY_ERROR_MESSAGE = "Category with id %s doesn't exist";
+    private static final String USER_ERROR_MESSAGE = "User with email %s doesn't exist";
     private static final String SUBCATEGORY_ERROR_MESSAGE = "SubCategory with id %s doesn't exist";
 
     @Transactional(readOnly = true)
@@ -51,7 +55,7 @@ public class AdvertisementService {
     }
 
     @Transactional
-    public AdvertisementDto addAdvertisement(AdvertisementSavingDto advertisementSavingDto) {
+    public AdvertisementDto addAdvertisement(AdvertisementSavingDto advertisementSavingDto, String userEmail) {
         Advertisement advertisement = advertisementSavingMapper.toEntity(advertisementSavingDto);
         Category category = categoryRepository.findById(advertisementSavingDto.getCategoryId())
                 .orElseThrow(() -> new EntityNotFoundException(String.format(CATEGORY_ERROR_MESSAGE,
@@ -61,9 +65,13 @@ public class AdvertisementService {
                 .orElseThrow(() -> new EntityNotFoundException(String.format(SUBCATEGORY_ERROR_MESSAGE,
                         advertisementSavingDto.getSubCategoryId())));
 
+        User user = userRepository.findUserByEmail(userEmail)
+                .orElseThrow(() -> new EntityNotFoundException(String.format(USER_ERROR_MESSAGE,
+                        userEmail)));
         advertisement.setCategory(category);
         advertisement.setSubCategory(subCategory);
         advertisement.linkImages();
+        advertisement.setUser(user);
         advertisement.setCreationDate(LocalDate.now());
         Advertisement savedAdvertisement = advertisementRepository.save(advertisement);
         return advertisementMapper.toDto(savedAdvertisement);

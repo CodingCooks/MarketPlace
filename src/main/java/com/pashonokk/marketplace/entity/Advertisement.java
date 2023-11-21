@@ -28,8 +28,17 @@ public class Advertisement {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "sub_category_id")
     private SubCategory subCategory;
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "advertisement")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
+    private User user;
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "advertisement", orphanRemoval = true)
+    @Setter(AccessLevel.PRIVATE)
     private Set<Image> images = new HashSet<>();
+
+    @ManyToMany(cascade = {CascadeType.MERGE, CascadeType.PERSIST}, mappedBy = "savedAdvertisements")
+    @Setter(AccessLevel.PRIVATE)
+    private Set<User> users = new HashSet<>();
+
     @Column(unique = true, nullable = false, updatable = false)
     private String location;
     private LocalDate creationDate;

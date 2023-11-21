@@ -2,15 +2,19 @@ package com.pashonokk.marketplace.service;
 
 
 import com.pashonokk.marketplace.dto.*;
+import com.pashonokk.marketplace.entity.Advertisement;
 import com.pashonokk.marketplace.entity.Role;
 import com.pashonokk.marketplace.entity.Token;
 import com.pashonokk.marketplace.entity.User;
 import com.pashonokk.marketplace.event.UserRegistrationCompletedEvent;
 import com.pashonokk.marketplace.exception.*;
+import com.pashonokk.marketplace.mapper.AdvertisementMapper;
 import com.pashonokk.marketplace.mapper.UserSavingMapper;
+import com.pashonokk.marketplace.repository.AdvertisementRepository;
 import com.pashonokk.marketplace.repository.RoleRepository;
 import com.pashonokk.marketplace.repository.UserRepository;
 import com.pashonokk.marketplace.util.EmailProperties;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import org.jasypt.encryption.StringEncryptor;
@@ -36,8 +40,10 @@ import java.util.List;
 @RequiredArgsConstructor
 public class UserService {
     private final UserRepository userRepository;
+    private final AdvertisementRepository advertisementRepository;
     private final RoleRepository roleRepository;
     private final UserSavingMapper userSavingMapper;
+    private final AdvertisementMapper advertisementMapper;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
@@ -47,6 +53,8 @@ public class UserService {
     @Value("${spring.mail.username}")
     private String emailFrom;
     private static final String USER_EXISTS_ERROR_MESSAGE = "User with email %s already exists";
+    private static final String ADVERTISEMENT_ERROR_MESSAGE = "Advertisement with id %s doesn't exist";
+
 
 
     @Transactional
@@ -55,7 +63,6 @@ public class UserService {
             throw new UserExistsException(String.format(USER_EXISTS_ERROR_MESSAGE, userDto.getEmail()));
         }
         User user = userSavingMapper.toEntity(userDto);
-//        user.setIsDeleted(false);
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         Role roleUser = roleRepository.findRoleByName("ROLE_USER");
         user.setRole(roleUser);
@@ -131,5 +138,29 @@ public class UserService {
             throw new UsernameNotFoundException("User with id " + userId + " doesn`t exist");
         }
         userRepository.setUserAsDeleted(userId);
+    }
+
+    @Transactional(readOnly = true)
+    public List<AdvertisementDto> getActiveUserAdvertisements(Long userId) {
+        List<Advertisement> allActiveAdvertisementsById = advertisementRepository.findAllActiveAdvertisementsById(userId);
+        return allActiveAdvertisementsById.stream().map(advertisementMapper::toDto).toList();
+    }
+
+    @Transactional
+    public void addLikedAdvertisement(Long advertisementId, String userEmail) {
+        User user = userRepository.findUserByEmail(userEmail)
+                .orElseThrow(() -> new EntityNotFoundException("User with email " + userEmail + " doesn`t exist"));
+        Advertisement advertisement = advertisementRepository
+                .findById(advertisementId)
+                .orElseThrow(() -> new EntityNotFoundException(
+                        String.format(ADVERTISEMENT_ERROR_MESSAGE, advertisementId)));
+        user.getSavedAdvertisements().add(advertisement);
+    }
+
+    @Transactional(readOnly = true)
+    public List<AdvertisementDto> getLikedUserAdvertisements(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new EntityNotFoundException("User with id " + userId + " doesn`t exist"));
+        return user.getSavedAdvertisements().stream().map(advertisementMapper::toDto).toList();
     }
 }

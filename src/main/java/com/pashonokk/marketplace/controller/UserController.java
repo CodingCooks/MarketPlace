@@ -1,9 +1,6 @@
 package com.pashonokk.marketplace.controller;
 
-import com.pashonokk.marketplace.dto.JwtAuthorizationResponse;
-import com.pashonokk.marketplace.dto.PasswordChangingDto;
-import com.pashonokk.marketplace.dto.UserAuthorizationDto;
-import com.pashonokk.marketplace.dto.UserSavingDto;
+import com.pashonokk.marketplace.dto.*;
 import com.pashonokk.marketplace.exception.EntityValidationException;
 import com.pashonokk.marketplace.service.UserService;
 import jakarta.validation.Valid;
@@ -11,8 +8,12 @@ import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.validation.Errors;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 
 @RestController
@@ -22,6 +23,18 @@ public class UserController {
     private final UserService userService;
     private final Logger logger = LoggerFactory.getLogger(UserController.class);
     private static final String VALIDATION_EXCEPTION_MESSAGE = "Validation failed";
+
+    @GetMapping("{userId}/active/advertisements")
+    public ResponseEntity<List<AdvertisementDto>> getActiveUserAdvertisements(@PathVariable Long userId) {
+        List<AdvertisementDto> allActiveAdvertisements = userService.getActiveUserAdvertisements(userId);
+        return ResponseEntity.ok(allActiveAdvertisements);
+    }
+
+    @GetMapping("{userId}/liked/advertisements")
+    public ResponseEntity<List<AdvertisementDto>> getLikedUserAdvertisements(@PathVariable Long userId) {
+        List<AdvertisementDto> allActiveAdvertisements = userService.getLikedUserAdvertisements(userId);
+        return ResponseEntity.ok(allActiveAdvertisements);
+    }
 
     @PostMapping("/register")
     public ResponseEntity<Void> registerUser(@RequestBody @Valid UserSavingDto userDto, Errors errors) {
@@ -58,5 +71,12 @@ public class UserController {
     public ResponseEntity<Void> deleteUserAccount(@PathVariable("userId") Long userId) {
         userService.deleteUserAccount(userId);
         return ResponseEntity.noContent().build();
+    }
+
+    @PatchMapping("/add-liked-advertisement/{advertisementId}")
+    public ResponseEntity<Void> addLikedAdvertisement(@PathVariable Long advertisementId,
+                                                      @AuthenticationPrincipal UserDetails userDetails) {
+        userService.addLikedAdvertisement(advertisementId, userDetails.getUsername());
+        return ResponseEntity.ok().build();
     }
 }
