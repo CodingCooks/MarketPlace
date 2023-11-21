@@ -9,6 +9,7 @@ import com.pashonokk.marketplace.entity.User;
 import com.pashonokk.marketplace.event.UserRegistrationCompletedEvent;
 import com.pashonokk.marketplace.exception.*;
 import com.pashonokk.marketplace.mapper.AdvertisementMapper;
+import com.pashonokk.marketplace.mapper.UserMapper;
 import com.pashonokk.marketplace.mapper.UserSavingMapper;
 import com.pashonokk.marketplace.repository.AdvertisementRepository;
 import com.pashonokk.marketplace.repository.RoleRepository;
@@ -34,6 +35,7 @@ import java.nio.charset.StandardCharsets;
 import java.time.OffsetDateTime;
 import java.util.Base64;
 import java.util.List;
+import java.util.Optional;
 
 
 @Service
@@ -43,6 +45,7 @@ public class UserService {
     private final AdvertisementRepository advertisementRepository;
     private final RoleRepository roleRepository;
     private final UserSavingMapper userSavingMapper;
+    private final UserMapper userMapper;
     private final AdvertisementMapper advertisementMapper;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
@@ -162,5 +165,18 @@ public class UserService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new EntityNotFoundException("User with id " + userId + " doesn`t exist"));
         return user.getSavedAdvertisements().stream().map(advertisementMapper::toDto).toList();
+    }
+
+    @Transactional
+    public UserDto editUser(Long userId, UserUpdateDto userUpdateDto) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new EntityNotFoundException("User with id " + userId + " doesn`t exist"));
+
+        Optional.ofNullable(userUpdateDto.getUsername()).ifPresent(user::setUsername);
+        Optional.ofNullable(userUpdateDto.getPhotoUrl()).ifPresent(user::setPhotoUrl);
+        Optional.ofNullable(userUpdateDto.getFirstName()).ifPresent(user::setFirstName);
+        Optional.ofNullable(userUpdateDto.getLastName()).ifPresent(user::setLastName);
+        Optional.ofNullable(userUpdateDto.getPhoneNumber()).ifPresent(user::setPhoneNumber);
+        return userMapper.toDto(user);
     }
 }

@@ -79,4 +79,10 @@ public class UserController {
         userService.addLikedAdvertisement(advertisementId, userDetails.getUsername());
         return ResponseEntity.ok().build();
     }
+
+    @PutMapping("/{userId}")
+    public ResponseEntity<UserDto> editUser(@PathVariable Long userId, @RequestBody UserUpdateDto userUpdateDto) {
+        UserDto userDto = userService.editUser(userId, userUpdateDto);
+        return ResponseEntity.ok(userDto);
+    }
 }

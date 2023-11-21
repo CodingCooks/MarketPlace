@@ -23,5 +23,5 @@ public class UserSavingDto {
     private String username;
     @NotBlank(message = "Phone number can`t be empty or null")
     private String phoneNumber;
-    private byte[] photo;
+    private String photoUrl;
 }

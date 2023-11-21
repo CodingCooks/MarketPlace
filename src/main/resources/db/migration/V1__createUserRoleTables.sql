@@ -16,7 +16,7 @@ CREATE TABLE IF NOT EXISTS users
     role_id      BIGINT,
     is_verified  BOOLEAN,
     is_deleted BOOLEAN,
-    photo        BYTEA,
+    photo_url VARCHAR(500),
     FOREIGN KEY (role_id) references role (id)
 );
 

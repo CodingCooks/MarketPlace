@@ -7,11 +7,9 @@ import lombok.*;
 @ToString
 @NoArgsConstructor
 @AllArgsConstructor
-public class UserDto {
-    private String email;
+public class UserUpdateDto {
     private String firstName;
     private String lastName;
-    private Boolean isDeleted;
     private String username;
     private String phoneNumber;
     private String photoUrl;
