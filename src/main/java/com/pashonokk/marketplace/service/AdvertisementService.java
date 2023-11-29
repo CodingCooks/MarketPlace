@@ -47,10 +47,11 @@ public class AdvertisementService {
                 .map(advertisementMapper::toDto));
     }
 
-    @Transactional(readOnly = true)
+    @Transactional
     public AdvertisementDto getAdvertisement(Long id) {
-        Advertisement advertisement = advertisementRepository.findById(id)
+        Advertisement advertisement = advertisementRepository.findWithPessimisticWriteLockById(id)
                 .orElseThrow(() -> new EntityNotFoundException(String.format(ADVERTISEMENT_ERROR_MESSAGE, id)));
+        advertisement.setViews(advertisement.getViews() + 1);
         return advertisementMapper.toDto(advertisement);
     }
 

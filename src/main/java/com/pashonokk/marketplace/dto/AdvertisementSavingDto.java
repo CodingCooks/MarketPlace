@@ -27,4 +27,6 @@ public class AdvertisementSavingDto {
     @NotNull
     private Set<@Valid ImageSavingDto> images;
     private String location;
+    private Long likes = 0L;
+    private Long views = 0L;
 }

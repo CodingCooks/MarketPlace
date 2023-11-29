@@ -18,4 +18,6 @@ public class AdvertisementDto {
     private String location;
     private LocalDate creationDate;
     private boolean isActive = true;
+    private Long likes;
+    private Long views;
 }
