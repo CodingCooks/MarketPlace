@@ -154,9 +154,10 @@ public class UserService {
         User user = userRepository.findUserByEmail(userEmail)
                 .orElseThrow(() -> new EntityNotFoundException("User with email " + userEmail + " doesn`t exist"));
         Advertisement advertisement = advertisementRepository
-                .findById(advertisementId)
+                .findWithPessimisticWriteLockById(advertisementId)
                 .orElseThrow(() -> new EntityNotFoundException(
                         String.format(ADVERTISEMENT_ERROR_MESSAGE, advertisementId)));
+        advertisement.setLikes(advertisement.getLikes() + 1);
         user.getSavedAdvertisements().add(advertisement);
     }
 

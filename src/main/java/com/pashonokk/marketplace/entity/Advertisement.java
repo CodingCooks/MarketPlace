@@ -45,6 +45,9 @@ public class Advertisement {
 
     private boolean isActive = true;
 
+    private Long likes;
+    private Long views;
+
     public void linkImages() {
         for (Image image : images) {
             image.setAdvertisement(this);
