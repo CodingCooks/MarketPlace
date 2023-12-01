@@ -12,7 +12,7 @@ CREATE TABLE IF NOT EXISTS users
     last_name    VARCHAR(50),
     username     VARCHAR(50),
     password     VARCHAR(256) NOT NULL,
-    phone_number VARCHAR(50)  NOT NULL UNIQUE,
+    phone_number VARCHAR(50) UNIQUE,
     role_id      BIGINT,
     is_verified  BOOLEAN,
     is_deleted BOOLEAN,
