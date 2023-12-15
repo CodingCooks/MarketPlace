@@ -26,6 +26,9 @@ public class AdvertisementSavingDto {
     private Long subCategoryId;
     @NotNull
     private Set<@Valid ImageSavingDto> images;
+    @Valid
+    @NotNull(message = "Address can`t be null")
+    private AddressSavingDto address;
     private String location;
     private Long likes = 0L;
     private Long views = 0L;

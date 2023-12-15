@@ -63,18 +63,14 @@ public class AdvertisementRestController {
         return ResponseEntity.created(location).body(savedAdvertisement);
     }
 
-    @PutMapping("/{advertisementId}")
-    public ResponseEntity<AdvertisementDto> updateAdvertisement(@PathVariable Long advertisementId, @RequestBody @Valid AdvertisementUpdateDto advertisementUpdateDto, Errors errors) {
-        if (errors.hasErrors()) {
-            errors.getFieldErrors().forEach(er -> logger.error(er.getDefaultMessage()));
-            throw new EntityValidationException("Validation failed", errors);
-        }
+    @PatchMapping("/{advertisementId}")
+    public ResponseEntity<AdvertisementDto> updateAdvertisement(@PathVariable Long advertisementId, @RequestBody AdvertisementUpdateDto advertisementUpdateDto) {
         AdvertisementDto updatedAdvertisement = advertisementService
                 .updateAdvertisement(advertisementUpdateDto, advertisementId);
         return ResponseEntity.ok(updatedAdvertisement);
     }
 
-    @PatchMapping("/{advertisementId}")
+    @PatchMapping("/set-not-active/{advertisementId}")
     public ResponseEntity<AdvertisementDto> setAdvertisementAsNotActive(@PathVariable Long advertisementId) {
         AdvertisementDto advertisementDto = advertisementService.setAdvertisementAsNotActive(advertisementId);
         return ResponseEntity.ok(advertisementDto);

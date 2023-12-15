@@ -48,6 +48,10 @@ public class Advertisement {
     private Long likes;
     private Long views;
 
+    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @JoinColumn(name = "address_id")
+    private Address address;
+
     public void linkImages() {
         for (Image image : images) {
             image.setAdvertisement(this);

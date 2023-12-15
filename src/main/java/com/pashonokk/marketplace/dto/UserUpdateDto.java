@@ -13,4 +13,5 @@ public class UserUpdateDto {
     private String username;
     private String phoneNumber;
     private String photoUrl;
+    private Boolean isAddressForAllAdvertisements;
 }

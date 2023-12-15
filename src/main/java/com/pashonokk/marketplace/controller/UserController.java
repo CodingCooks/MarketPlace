@@ -85,4 +85,16 @@ public class UserController {
         UserDto userDto = userService.editUser(userId, userUpdateDto);
         return ResponseEntity.ok(userDto);
     }
+
+    @PatchMapping("/set-address")
+    public ResponseEntity<Void> setAddressForUser(@RequestBody @Valid AddressSavingDto addressSavingDto,
+                                                  Errors errors,
+                                                  @AuthenticationPrincipal UserDetails userDetails) {
+        if (errors.hasErrors()) {
+            errors.getAllErrors().forEach(er -> logger.error(er.getDefaultMessage()));
+            throw new EntityValidationException(VALIDATION_EXCEPTION_MESSAGE, errors);
+        }
+        userService.setAddressForUser(addressSavingDto, userDetails.getUsername());
+        return ResponseEntity.ok().build();
+    }
 }

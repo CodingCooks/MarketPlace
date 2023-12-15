@@ -8,6 +8,7 @@ import com.pashonokk.marketplace.entity.Token;
 import com.pashonokk.marketplace.entity.User;
 import com.pashonokk.marketplace.event.UserRegistrationCompletedEvent;
 import com.pashonokk.marketplace.exception.*;
+import com.pashonokk.marketplace.mapper.AddressSavingMapper;
 import com.pashonokk.marketplace.mapper.AdvertisementMapper;
 import com.pashonokk.marketplace.mapper.UserMapper;
 import com.pashonokk.marketplace.mapper.UserSavingMapper;
@@ -55,7 +56,10 @@ public class UserService {
     private final StringEncryptor stringEncryptor;
     @Value("${spring.mail.username}")
     private String emailFrom;
+    private final AddressSavingMapper addressSavingMapper;
     private static final String USER_EXISTS_ERROR_MESSAGE = "User with email %s already exists";
+    private static final String USER_DOESNT_EXISTS_ERROR_MESSAGE = "User with email %s doesn't exists";
+    private static final String USER_WITH_ID_DOESNT_EXISTS_ERROR_MESSAGE = "User with id %s doesn't exists";
     private static final String ADVERTISEMENT_ERROR_MESSAGE = "Advertisement with id %s doesn't exist";
 
 
@@ -90,7 +94,8 @@ public class UserService {
     @Transactional
     public JwtAuthorizationResponse authorize(UserAuthorizationDto userDto) {
         User user = userRepository.findUserByEmail(userDto.getEmail())
-                .orElseThrow(() -> new UserDoesntExistException("User with email " + userDto.getEmail() + " doesn`t exist"));
+                .orElseThrow(() -> new UserDoesntExistException(
+                        String.format(USER_DOESNT_EXISTS_ERROR_MESSAGE, userDto.getEmail())));
         userChecks(userDto, user);
         try {
             authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(userDto.getEmail(), userDto.getPassword()));
@@ -118,7 +123,8 @@ public class UserService {
         byte[] decodedBytes = Base64.getDecoder().decode(encryptedEmail);
         String email = stringEncryptor.decrypt(new String(decodedBytes, StandardCharsets.UTF_8));
         User user = userRepository.findUserByEmail(email)
-                .orElseThrow(() -> new UsernameNotFoundException("User with email " + email + " doesn`t exist"));
+                .orElseThrow(() -> new UsernameNotFoundException(
+                        String.format(USER_DOESNT_EXISTS_ERROR_MESSAGE, encryptedEmail)));
 
         user.setPassword(passwordEncoder.encode(passwordChangingDto.getNewPassword()));
     }
@@ -126,7 +132,8 @@ public class UserService {
     @SneakyThrows
     public void sendLinkToChangePassword(String email) {
         if (!userRepository.existsByEmail(email)) {
-            throw new UsernameNotFoundException("User with email " + email + " doesn`t exist");
+            throw new UsernameNotFoundException(
+                    String.format(USER_DOESNT_EXISTS_ERROR_MESSAGE, email));
         }
         String encodedEmailForUrl = Base64.getEncoder().encodeToString(stringEncryptor.encrypt(email).getBytes(StandardCharsets.UTF_8));
         SimpleMailMessage mailMessage = createMailMessage(email,
@@ -138,7 +145,8 @@ public class UserService {
     @Transactional
     public void deleteUserAccount(Long userId) {
         if (!userRepository.existsById(userId)) {
-            throw new UsernameNotFoundException("User with id " + userId + " doesn`t exist");
+            throw new UsernameNotFoundException(
+                    String.format(USER_WITH_ID_DOESNT_EXISTS_ERROR_MESSAGE, userId));
         }
         userRepository.setUserAsDeleted(userId);
     }
@@ -152,7 +160,8 @@ public class UserService {
     @Transactional
     public void addLikedAdvertisement(Long advertisementId, String userEmail) {
         User user = userRepository.findUserByEmail(userEmail)
-                .orElseThrow(() -> new EntityNotFoundException("User with email " + userEmail + " doesn`t exist"));
+                .orElseThrow(() -> new EntityNotFoundException(
+                        String.format(USER_DOESNT_EXISTS_ERROR_MESSAGE, userEmail)));
         Advertisement advertisement = advertisementRepository
                 .findWithPessimisticWriteLockById(advertisementId)
                 .orElseThrow(() -> new EntityNotFoundException(
@@ -164,20 +173,31 @@ public class UserService {
     @Transactional(readOnly = true)
     public List<AdvertisementDto> getLikedUserAdvertisements(Long userId) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new EntityNotFoundException("User with id " + userId + " doesn`t exist"));
+                .orElseThrow(() -> new EntityNotFoundException(
+                        String.format(USER_WITH_ID_DOESNT_EXISTS_ERROR_MESSAGE, userId)));
         return user.getSavedAdvertisements().stream().map(advertisementMapper::toDto).toList();
     }
 
     @Transactional
     public UserDto editUser(Long userId, UserUpdateDto userUpdateDto) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new EntityNotFoundException("User with id " + userId + " doesn`t exist"));
+                .orElseThrow(() -> new EntityNotFoundException(
+                        String.format(USER_WITH_ID_DOESNT_EXISTS_ERROR_MESSAGE, userId)));
 
         Optional.ofNullable(userUpdateDto.getUsername()).ifPresent(user::setUsername);
         Optional.ofNullable(userUpdateDto.getPhotoUrl()).ifPresent(user::setPhotoUrl);
         Optional.ofNullable(userUpdateDto.getFirstName()).ifPresent(user::setFirstName);
         Optional.ofNullable(userUpdateDto.getLastName()).ifPresent(user::setLastName);
         Optional.ofNullable(userUpdateDto.getPhoneNumber()).ifPresent(user::setPhoneNumber);
+        Optional.ofNullable(userUpdateDto.getIsAddressForAllAdvertisements()).ifPresent(user::setAddressForAllAdvertisements);
         return userMapper.toDto(user);
+    }
+
+    @Transactional
+    public void setAddressForUser(AddressSavingDto addressSavingDto, String userEmail) {
+        User user = userRepository.findUserByEmail(userEmail)
+                .orElseThrow(() -> new EntityNotFoundException(
+                        String.format(USER_DOESNT_EXISTS_ERROR_MESSAGE, userEmail)));
+        user.setAddress(addressSavingMapper.toEntity(addressSavingDto));
     }
 }
