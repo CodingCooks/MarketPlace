@@ -4,10 +4,8 @@ import com.pashonokk.marketplace.dto.AdvertisementDto;
 import com.pashonokk.marketplace.dto.AdvertisementSavingDto;
 import com.pashonokk.marketplace.dto.AdvertisementUpdateDto;
 import com.pashonokk.marketplace.endpoint.PageResponse;
-import com.pashonokk.marketplace.entity.Advertisement;
-import com.pashonokk.marketplace.entity.Category;
-import com.pashonokk.marketplace.entity.SubCategory;
-import com.pashonokk.marketplace.entity.User;
+import com.pashonokk.marketplace.entity.*;
+import com.pashonokk.marketplace.mapper.AddressSavingMapper;
 import com.pashonokk.marketplace.mapper.AdvertisementMapper;
 import com.pashonokk.marketplace.mapper.AdvertisementSavingMapper;
 import com.pashonokk.marketplace.mapper.PageMapper;
@@ -35,6 +33,7 @@ public class AdvertisementService {
     private final CategoryRepository categoryRepository;
     private final UserRepository userRepository;
     private final SubCategoryRepository subCategoryRepository;
+    private final AddressSavingMapper addressSavingMapper;
     private static final String ADVERTISEMENT_ERROR_MESSAGE = "Advertisement with id %s doesn't exist";
     private static final String CATEGORY_ERROR_MESSAGE = "Category with id %s doesn't exist";
     private static final String USER_ERROR_MESSAGE = "User with email %s doesn't exist";
@@ -69,6 +68,8 @@ public class AdvertisementService {
         User user = userRepository.findUserByEmail(userEmail)
                 .orElseThrow(() -> new EntityNotFoundException(String.format(USER_ERROR_MESSAGE,
                         userEmail)));
+        Address address = addressSavingMapper.toEntity(advertisementSavingDto.getAddress());
+        advertisement.setAddress(address);
         advertisement.setCategory(category);
         advertisement.setSubCategory(subCategory);
         advertisement.linkImages();
@@ -87,7 +88,20 @@ public class AdvertisementService {
         Optional.ofNullable(advertisementUpdateDto.getName()).ifPresent(advertisement::setName);
         Optional.ofNullable(advertisementUpdateDto.getDescription()).ifPresent(advertisement::setDescription);
         Optional.ofNullable(advertisementUpdateDto.getLocation()).ifPresent(advertisement::setLocation);
+
+        updateAdvertisementAddressFields(advertisementUpdateDto, advertisement);
         return advertisementMapper.toDto(advertisement);
+    }
+
+    private void updateAdvertisementAddressFields(AdvertisementUpdateDto advertisementUpdateDto, Advertisement advertisement) {
+        Optional.ofNullable(advertisementUpdateDto.getAddress().getFullAddress())
+                .ifPresent(fullAddress -> advertisement.getAddress().setFullAddress(fullAddress));
+        Optional.ofNullable(advertisementUpdateDto.getAddress().getCity())
+                .ifPresent(city -> advertisement.getAddress().setCity(city));
+        Optional.ofNullable(advertisementUpdateDto.getAddress().getCountry())
+                .ifPresent(country -> advertisement.getAddress().setCountry(country));
+        Optional.ofNullable(advertisementUpdateDto.getAddress().getPostalCode())
+                .ifPresent(postalCode -> advertisement.getAddress().setPostalCode(postalCode));
     }
 
     @Transactional

@@ -20,4 +20,5 @@ public class AdvertisementDto {
     private boolean isActive = true;
     private Long likes;
     private Long views;
+    private AddressDto address;
 }
