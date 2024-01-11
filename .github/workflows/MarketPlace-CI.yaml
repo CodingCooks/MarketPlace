@@ -3,7 +3,7 @@ name: Build and Test DvdRental App
 on:
   pull_request:
     branches:
-      - develop
+      - develop # adjust with the name of your target branch if it's not "main"
   push:
     branches:
       - develop master
